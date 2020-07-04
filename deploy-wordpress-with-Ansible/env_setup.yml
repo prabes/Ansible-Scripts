@@ -1,0 +1,121 @@
+---
+- hosts: wordpress
+  vars:
+    server_name: 192.168.121.133
+    site_name: sample.com
+
+  tasks:
+    - name: Test Connection
+      ping:
+    - name: Install and Start NGINX of latest version
+      become: yes
+      apt:
+        name: nginx
+        state: latest
+        update_cache: yes
+    - name: Get current http stats
+      nginx_status_info:
+        url: http://localhost/
+        timeout: 20
+      register: result
+    - name: Install and Start MySQL-server
+      become: yes
+      apt:
+        name: mysql-server
+        state: latest
+        update_cache: yes
+    - name: Create database user with name 'wordpress' and password 'wordpress' with all database privileges
+      mysql_user:
+        name: wordpress
+        password: 'wordpress'
+        priv: '*.*:ALL,GRANT'
+        state: present
+
+    - name: install PHP packages
+      apt: update_cache=yes
+      become: yes
+      with_items:
+        - git
+        - php7.2-cli
+        - php7.2-fpm
+        - php7.2-mysql
+        - php7.2-json
+        - php7.2-opcache
+        - php7.2-mbstring
+        - php7.2-xml
+        - php7.2-gd
+        - php7.2-curl
+
+    - name: create a file /var/www/html/sample.com
+      become: yes
+      file:
+        path: /var/www/html/sample.com
+        state: directory
+        mode: "u=rw,g=wr,o=rwx"
+    
+    - name: Download and Extract Wordpress
+      get_url:
+        url: https://wordpress.org/latest.tar.gz
+        dest: /tmp
+        timeout: 200
+    
+    - name: install tar
+      become: yes
+      apt:
+        pkg:
+          - unzip
+          - tar
+      tags:
+        - install_zip  
+
+    - name: Decompress the tar source
+      become: yes  
+      unarchive:
+        src: /tmp/wordpress-5.4.2.tar.gz
+        dest: /tmp
+        remote_src: yes
+      tags:
+        - install_zip
+
+    - name: Copying Wordpress to /var/www/html/sample.com
+      become: yes
+      copy:
+        src: /tmp/wordpress/
+        dest: /var/www/html/sample.com
+        owner: www-data
+        remote_src: yes
+      tags:
+        - nginx
+        - test
+    
+    - name: Create file sample.com for nginx configuration
+      become: yes
+      file:
+        path: "/etc/nginx/sites-available/sample.com"
+        state: touch
+      tags:
+        - nginx
+
+    - name: Configure NGINX for sample.com
+      become: yes
+      template:
+        src: nginx-template.j2
+        dest: /etc/nginx/sites-available/sample.com
+        owner: root
+        mode: u=rw,g=r,o=r  
+      tags: 
+        - nginx 
+
+    - name: Creating a simlink for sites-available and sites-enable for sample.com
+      become: yes
+      shell:  ln -s /etc/nginx/sites-available/sample.com /etc/nginx/sites-enabled/
+      tags:
+        - nginx
+    
+    - name: Reload nginx
+      become: yes
+      service: 
+        name: nginx
+        state: restarted
+      tags: 
+        - reload
