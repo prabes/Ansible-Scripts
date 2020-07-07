@@ -3,33 +3,40 @@
   vars:
     server_name: 192.168.121.133
     site_name: sample.com
+    db_name: wordpress
+    db_password: wordpress
+    wp_version: latest
+    php_version: php7.2
 
-  tasks:
-    - name: Test Connection
-      ping:
     - name: Install and Start NGINX of latest version
       become: yes
       apt:
         name: nginx
         state: latest
         update_cache: yes
-    - name: Get current http stats
-      nginx_status_info:
-        url: http://localhost/
-        timeout: 20
-      register: result
+    
     - name: Install and Start MySQL-server
       become: yes
       apt:
         name: mysql-server
         state: latest
         update_cache: yes
+    
+    - name: Install PyMySql 
+      become: yes
+      apt:
+        name: python-pymysql
+        state: latest
+
     - name: Create database user with name 'wordpress' and password 'wordpress' with all database privileges
+      become: yes
       mysql_user:
-        name: wordpress
-        password: 'wordpress'
+        name: {{ db_name }}
+        password: {{ db_password }}
         priv: '*.*:ALL,GRANT'
         state: present
+      tags:
+        - sql_user
 
     - name: install PHP packages
       apt: update_cache=yes
@@ -45,20 +52,7 @@
         - php7.2-xml
         - php7.2-gd
         - php7.2-curl
-
-    - name: create a file /var/www/html/sample.com
-      become: yes
-      file:
-        path: /var/www/html/sample.com
-        state: directory
-        mode: "u=rw,g=wr,o=rwx"
-    
-    - name: Download and Extract Wordpress
-      get_url:
-        url: https://wordpress.org/latest.tar.gz
-        dest: /tmp
-        timeout: 200
-    
+    - 
     - name: install tar
       become: yes
       apt:
@@ -71,7 +65,7 @@
     - name: Decompress the tar source
       become: yes  
       unarchive:
-        src: /tmp/wordpress-5.4.2.tar.gz
+        src: https://wordpress.org/{{ wp_version }}.tar.gz
         dest: /tmp
         remote_src: yes
       tags:
@@ -84,6 +78,7 @@
         dest: /var/www/html/sample.com
         owner: www-data
         remote_src: yes
+        mode: "u=rw,g=wr,o=rwx"
       tags:
         - nginx
         - test
@@ -99,7 +94,7 @@
     - name: Configure NGINX for sample.com
       become: yes
       template:
-        src: nginx-template.j2
+        src: templates/nginx-template.j2
         dest: /etc/nginx/sites-available/sample.com
         owner: root
         mode: u=rw,g=r,o=r  
@@ -112,10 +107,7 @@
       tags:
         - nginx
     
-    - name: Reload nginx
-      become: yes
-      service: 
+    - name: restart nginx
+      service:
         name: nginx
         state: restarted
-      tags: 
-        - reload
