@@ -1,12 +1,9 @@
 ---
 - hosts: wordpress
-  vars:
-    server_name: 192.168.121.133
-    site_name: sample.com
-    db_name: wordpress
-    db_password: wordpress
-    wp_version: latest
-    php_version: php7.2
+  vars_files:
+    - "./vars/versions.yml"
+    - "./database.yml"
+    - "./vars/hostvars.yml"
 
     - name: Install and Start NGINX of latest version
       become: yes
@@ -106,7 +103,11 @@
       shell:  ln -s /etc/nginx/sites-available/sample.com /etc/nginx/sites-enabled/
       tags:
         - nginx
-    
+      
+      notify:
+      -restart nginx
+  
+  handlers:  
     - name: restart nginx
       service:
         name: nginx
