@@ -1,0 +1,29 @@
+
+---
+- name: Install MySQL
+  become: yes
+  apt:
+    name: mysql-server
+    state: latest
+    update_cache: yes
+  tags: 
+    - mysql
+
+- name: Install pymysql
+  become: yes
+  apt:
+    name: python3-pymysql
+    state: latest
+  tags: 
+    -mysql
+
+- name: Create User
+  become: yes
+  mysql_user: 
+    name: "{{db_username}}"
+    password: "{{ db_password }}"
+    priv: '*.*:ALL,GRANT'
+    state: present
+  tags:
+    - sql_user
+    - mysql

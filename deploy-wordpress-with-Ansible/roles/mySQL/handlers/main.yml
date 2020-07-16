@@ -1,0 +1,9 @@
+---
+# handlers file for mySQL
+
+# handlers modules for this role
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted

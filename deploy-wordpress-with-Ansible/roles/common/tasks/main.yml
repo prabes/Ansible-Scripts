@@ -1,0 +1,13 @@
+---
+- name: Install git 
+  apt: 
+    name: git
+    state: present
+    update_cache: yes
+  tags: git
+- name: Install tar and zip
+  apt:
+    pkg:
+      - tar
+      - unzip
+  tags: decompress

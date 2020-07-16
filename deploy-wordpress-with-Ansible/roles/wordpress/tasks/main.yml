@@ -1,0 +1,16 @@
+---
+- name: Decompress the tar source
+  become: yes  
+  unarchive:
+    src: https://wordpress.org/{{ wp_version }}.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Copying Wordpress to /var/www/html/sample.com
+  become: yes
+  copy:
+    src: /tmp/wordpress/
+    dest: /var/www/html/sample.com
+    owner: www-data
+    remote_src: yes
+    mode: "u=rw,g=wr,o=rwx"
