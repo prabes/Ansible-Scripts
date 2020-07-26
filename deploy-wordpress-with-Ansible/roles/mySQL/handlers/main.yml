@@ -3,7 +3,7 @@
 
 # handlers modules for this role
 
-- name: restart nginx
+- name: start mySQL
   service:
-    name: nginx
-    state: restarted
+    name: mysql
+    state: started

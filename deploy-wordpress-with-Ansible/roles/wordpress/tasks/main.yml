@@ -5,6 +5,8 @@
     src: https://wordpress.org/{{ wp_version }}.tar.gz
     dest: /tmp
     remote_src: yes
+  tags:
+    - wordpress
 
 - name: Copying Wordpress to /var/www/html/sample.com
   become: yes
@@ -13,4 +15,8 @@
     dest: /var/www/html/sample.com
     owner: www-data
     remote_src: yes
-    mode: "u=rw,g=wr,o=rwx"
+    mode: "u=rwx,g=rwx,o=rwx"
+  # notify: restart php-fpm
+  tags:
+    - wordpress
+    - copy

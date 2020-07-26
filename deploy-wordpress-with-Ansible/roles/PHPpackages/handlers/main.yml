@@ -2,5 +2,5 @@
 - name: restart php-fpm
   become: yes
   service: 
-    name: php7.2-fpm
+    name: php{{php_version}}-fpm
     state: started

@@ -1,2 +1,3 @@
 ---
 # vars file for PHPpackages
+php_version: 7.4

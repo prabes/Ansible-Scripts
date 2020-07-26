@@ -1,8 +1,8 @@
 ---
 - hosts: wordpress
-
   roles: 
-    - common
     - PHPpackages
-    - mySQL
     - NGINX
+    - mySQL
+    - wordpress
+  

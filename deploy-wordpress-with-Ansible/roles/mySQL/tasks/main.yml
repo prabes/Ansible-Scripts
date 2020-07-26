@@ -15,15 +15,33 @@
     name: python3-pymysql
     state: latest
   tags: 
-    -mysql
+    - mysql
+
+- name: Install mysqldb
+  apt:
+    name: python-mysqldb
+    state: latest
+  tags:
+    - mysql
 
 - name: Create User
   become: yes
-  mysql_user: 
+  mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    login_host: "localhost"
     name: "{{db_username}}"
     password: "{{ db_password }}"
     priv: '*.*:ALL,GRANT'
     state: present
   tags:
-    - sql_user
+    - sqluser
+    - mysql
+
+- name: Create DB
+  mysql_db:
+    login_user: "{{db_username}}"
+    login_password: "{{db_password}}"
+    name: "{{db_name}}"
+    state: present
+  tags: 
     - mysql

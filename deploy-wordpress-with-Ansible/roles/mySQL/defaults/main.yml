@@ -1,3 +1,5 @@
 ---
 db_username: 'wordpress'
 db_password: 'wordpress'
+db_name: 'wordpress'
+hostname: 'localhost'

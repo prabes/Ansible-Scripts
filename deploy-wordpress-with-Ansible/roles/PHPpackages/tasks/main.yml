@@ -1,16 +1,43 @@
 ---
-- name: install PHP packages
-  apt: update_cache=yes
+
+- name: Add PPA
   become: yes
+  apt_repository:
+    repo: 'ppa:ondrej/php'
+    state: present
+  tags:
+    - php
+
+- name: install PHP packages
+  become: yes
+  apt:
   with_items:
     - git
-    - php7.2-cli
-    - php7.2-fpm
-    - php7.2-mysql
-    - php7.2-json
-    - php7.2-opcache
-    - php7.2-mbstring
-    - php7.2-xml
-    - php7.2-gd
-    - php7.2-curl
+    - tar
+    - unzip
+    - php{{php_version}}-cli
+    - php{{php_version}}-opcache
+    - php{{php_version}}-json
+    - php{{php_version}}-mbstring
+    - php{{php_version}}-xml
+    - php{{php_version}}-gd
+    - php{{php_version}}-curl
+  tags:
+    - pp
+    - php
+
+- name: install php-mysql
+  apt:
+    name: php{{php_version}}-mysql
+    state: present
+  tags:
+    - php
+
+- name: install php-fpm
+  become: yes
+  apt:
+    name: php{{php_version}}-fpm
+    state: present 
   notify: restart php-fpm
+  tags:
+    - php
