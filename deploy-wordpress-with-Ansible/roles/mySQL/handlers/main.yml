@@ -1,0 +1,9 @@
+---
+# handlers file for mySQL
+
+# handlers modules for this role
+
+- name: start mySQL
+  service:
+    name: mysql
+    state: started

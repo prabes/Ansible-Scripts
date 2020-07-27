@@ -1,0 +1,31 @@
+---
+
+- name: Install and Start NGINX of latest version
+  become: yes
+  apt:
+    name: nginx
+    state: latest
+  tags:
+    - nginx
+
+- name: Configure NGINX for sample.com
+  become: yes
+  template:
+    src: nginx-template.j2
+    dest: /etc/nginx/sites-available/sample.com
+    owner: root
+    mode: u=rw,g=r,o=r  
+  tags:
+    - nginx
+
+- name: Creating a simlink
+  become: yes
+  file: 
+    src: /etc/nginx/sites-available/sample.com
+    dest: /etc/nginx/sites-enabled/sample.com
+    state: link
+    owner: root
+  notify: reload NGINX
+  tags: 
+    - nginx 
+

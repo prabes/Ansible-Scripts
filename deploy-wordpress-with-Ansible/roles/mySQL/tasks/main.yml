@@ -1,0 +1,47 @@
+
+---
+- name: Install MySQL
+  become: yes
+  apt:
+    name: mysql-server
+    state: latest
+    update_cache: yes
+  tags: 
+    - mysql
+
+- name: Install pymysql
+  become: yes
+  apt:
+    name: python3-pymysql
+    state: latest
+  tags: 
+    - mysql
+
+- name: Install mysqldb
+  apt:
+    name: python-mysqldb
+    state: latest
+  tags:
+    - mysql
+
+- name: Create User
+  become: yes
+  mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    login_host: "localhost"
+    name: "{{db_username}}"
+    password: "{{ db_password }}"
+    priv: '*.*:ALL,GRANT'
+    state: present
+  tags:
+    - sqluser
+    - mysql
+
+- name: Create DB
+  mysql_db:
+    login_user: "{{db_username}}"
+    login_password: "{{db_password}}"
+    name: "{{db_name}}"
+    state: present
+  tags: 
+    - mysql
